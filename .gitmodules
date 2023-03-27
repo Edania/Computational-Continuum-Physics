@@ -1,0 +1,6 @@
+[submodule "problem_set_1/pybind11"]
+	path = problem_set_1/pybind11
+	url = https://github.com/pybind/pybind11
+[submodule "test/pybind11"]
+	path = test/pybind11
+	url = https://github.com/pybind/pybind11
