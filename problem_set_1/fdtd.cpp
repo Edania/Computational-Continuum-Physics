@@ -26,12 +26,10 @@ double ** create_2d_matrix(int rows, int columns){
 }
 
 void c_em_fdtd(double** E_y, double** B_z, int dim_t_, int dim_x, double tau, double h){
-    //Set the matrix to zero everywhere just in case
-
     //Initial conditions 
     for (int m = 0; m < dim_x; m++){
         E_y[0][m] = sin(20*PI*m);
-        B_z[0][m] = sin(20*PI*m);
+        B_z[0][m] = 0; //sin(20*PI*m);
     }
 
 
@@ -44,7 +42,7 @@ void c_em_fdtd(double** E_y, double** B_z, int dim_t_, int dim_x, double tau, do
     //Explicit calculation
     for (int n = 0; n < dim_t_; n++){
         for (int m = 0; m < dim_x; m++){
-            E_y[n][m] = 1;
+            E_y[n][m] = B_z[n][m];
             B_z[n][m] = 1;
             //E_y[n+1][m] = tau*(E_y[n][m-1] + E_y[n][m+1] - 2*E_y[n][m])/(h*h) + E_y[n][m];           
         }
