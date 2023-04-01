@@ -1,12 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-sys.path.insert(0, 'C:/Users/elsa2/Documents/Master/Computational Continuum Physics/test/build/Release')
+#sys.path.insert(0, 'C:/Users/elsa2/Documents/Master/Computational Continuum Physics/test/build/Release')
+sys.path.insert(0,'C:/Users/Elsa3/Documents/Master/Computational-Continuum-Physics/test/build/Debug')
 import testing
 
 #TODO: Implement residual, test for convergence, approximation order and so on
 print('nyeh')
-result = testing.advection(100,100, 0.001, 0.001)
+result = testing.advection(100,100, 0.001, 0.001, 1)
 
 x = np.linspace(0,100,100).reshape(1,-1)
 t = np.linspace(0,100,100).reshape(-1,1)

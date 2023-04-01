@@ -3,5 +3,5 @@
         "iostream": "cpp"
     },
     "cmake.configureOnOpen": true,
-    "cmake.sourceDirectory": "${workspaceFolder}/test/pybind11"
+    "cmake.sourceDirectory": "${workspaceFolder}/problem_set_1"
 }

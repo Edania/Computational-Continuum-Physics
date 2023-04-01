@@ -5,3 +5,5 @@ project(testing)
 add_subdirectory(pybind11)
 
 pybind11_add_module(testing testing.cpp)
+
+add_executable(testing_2 testing_2.cpp)

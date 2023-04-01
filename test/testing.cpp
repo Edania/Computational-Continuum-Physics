@@ -1,10 +1,13 @@
-#include <iostream> 
+#include <iostream>
+#include <cmath> 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 
+#define PI 3.141592653589793238463
+
 namespace py = pybind11;
 
-
+using namespace std;
 double ** create_2d_matrix(int rows, int columns){
     double** result = new double*[rows];
 
@@ -20,6 +23,12 @@ double ** create_2d_matrix(int rows, int columns){
     return result;    
 }
 
+void delete_2d_matrix(double** matrix, int rows, int columns){
+    for(int i = 0; i < rows; i++){
+            delete[] matrix[i];
+    }
+    delete[] matrix;
+}
 
 double * c_thomas_algorithm(double * a, double * b, double* c, double * f, int size){
     //u[0] is boundary condition
@@ -98,41 +107,34 @@ double ** c_BCTS_heat(double** f, int rows, int columns, double tau, double h, d
 
 }
 
-double ** c_FCTS_heat(int rows, int columns, double tau, double h, double c){
-    double** result = new double*[rows];
-
-    for(int i = 0; i < rows; i++){
-            result[i] = new double[columns];
-    }
-    //Set the matrix to zero everywhere just in case
-    for (int n = 0; n < rows; n++){
-        for(int m = 0; m < columns; m++){
-            result[n][m] = 0;
-        }
-    }
-    //Initial and boundary conditions
+double ** c_FTCS_heat(int rows, int columns, double tau, double h, double c, double omega_0, double omega_1){
+    double** result = create_2d_matrix(rows, columns);
+    //Initial conditions
     for (int m = 0; m < columns; m++){
-        result[0][m] = m*h;
+        result[0][m] = pow(sin(PI*h*m),2);
     }
 
-    for (int n = 0; n < rows; n++){
-        result[n][0] = 0;
-        result[n][columns-1] = 0; 
-    }
+    //Boundary conditions
+    /*for (int n = 0; n < rows; n++){
+        result[n][0] = cos(omega_0*tau*n)-1/omega_0;
+        result[n][columns-1] = cos(omega_1*tau*n)-1/omega_1; 
+    }*/
 
     //Explicit calculation
-    for (int n = 0; n < rows; n++){
-        for (int m = 0; m < columns; m++){
-            result[n+1][m] = c*tau*(result[n][m-1] + result[n][m+1] - 2*result[n][m])/(h*h) + result[n][m];           
+    for (int n = 0; n < rows-1; n++){
+        for (int m = 1; m < columns-1; m++){
+            result[n+1][m] = c*tau*(result[n][m-1] + result[n][m+1] - 2*result[n][m])/(h*h) + result[n][m];
+            result[n+1][0] = -h*sin(omega_0*tau*n) + result[n][1];
+            result[n+1][columns-1] = h*sin(omega_1*tau*n) + result[n][columns-2]; 
         }
     }
 
     return result;
 }
-
+/*
 double ** c_two_level_FDM_heat(int rows, int columns, double tau, double h, double xi){
     //Find some matrix equation :)
-}
+}*/
 
 double ** c_advection(int rows, int columns, double tau, double h, double c) 
 {
@@ -164,8 +166,6 @@ double ** c_advection(int rows, int columns, double tau, double h, double c)
     return result;
 }
 
-
-
 py::array_t<double> advection(int rows, int columns, double tau, double h, double c){
     double** c_array = c_advection(rows, columns, tau, h, c);
     py::array_t<double, py::array::c_style> arr({rows, columns});
@@ -176,9 +176,25 @@ py::array_t<double> advection(int rows, int columns, double tau, double h, doubl
             //ra(n,m) = n+m;
         }
     } 
+    delete_2d_matrix(c_array, rows, columns);
+    return arr;
+}
+
+py::array_t<double> FTCS_heat(int rows, int columns, double tau, double h, double c,double omega_0, double omega_1){
+    double** c_array = c_FTCS_heat(rows, columns, tau, h, c,omega_0,omega_1);
+    py::array_t<double, py::array::c_style> arr({rows, columns});
+    auto ra = arr.mutable_unchecked();
+    for(int n = 0; n < rows; n++){
+        for(int m = 0; m < columns; m++){
+            ra(n,m) = c_array[n][m];
+            //ra(n,m) = n+m;
+        }
+    } 
+    delete_2d_matrix(c_array, rows, columns);
     return arr;
 }
 
 PYBIND11_MODULE(testing, m){
     m.def("advection", &advection, py::return_value_policy::copy);
+    m.def("FTCS_heat", &FTCS_heat, py::return_value_policy::copy);
 }
